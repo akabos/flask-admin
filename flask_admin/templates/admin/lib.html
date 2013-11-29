@@ -89,7 +89,7 @@
         &nbsp;
       {% endif %}
     </label>
-    <div class="col-md-{% if field.type in ['DateTimeField', 'DateField'] %}2{% else %}4{% endif %}">
+    <div class="col-md-{% if field.type == 'DateTimeField' %}3{% elif field.type== 'DateField' %}2{% elif field.type == 'InlineModelFormList' %}6{% else %}4{% endif %}">
       {{ field(class="form-control", **kwargs)|safe }}
       {% endif %}
       {% if direct_error %}

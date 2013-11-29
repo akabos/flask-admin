@@ -19,8 +19,11 @@ form.icon button {
 
 a.icon, button span.glyphicon {
     text-decoration: none;
-    margin-left: 10px;
     color: black;
+}
+
+a.icon:first-child {
+    margin-right: 15px;
 }
 
 /* Model search form */
@@ -145,6 +148,16 @@ td>span.glyphicon {
     padding-left: 35%;
 }
 
+.span1 {
+    text-align: center;
+    width: 40px;
+}
+
+.span2 {
+    text-align: center;
+    width: 100px;
+}
+
 /* Patch Select2 */
 .select2-results li {
     min-height: 24px !important;
@@ -154,6 +167,7 @@ td>span.glyphicon {
     height: auto !important;
     padding: 0px;
     border-width: 0px;
+    min-width: 180px;
 }
 
 form .select2-choice {
