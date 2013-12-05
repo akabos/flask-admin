@@ -126,7 +126,24 @@
         {% endfor %}
     {% endif %}
 
-    {% if form_rules %}
+    {% if form_tabs %}
+	<ul id="{{ form_tabs.id }}" class="nav nav-tabs">
+	  {% for id, name, content in form_tabs %}
+	  <li {% if loop.first %}class="active"{% endif %}>
+	    <a data-toggle="tab" href="#{{ id }}" onclick="$('this').tab('show');">{{ name }}</a>
+	  </li>
+	  {% endfor %}
+	</ul>
+	<div id="{{ form_tabs.id }}_cnt" class="tab-content">
+	  {% for id, name, content in form_tabs %}
+	  <div id="{{ id }}" class="tab-pane form-pane fade {% if loop.first %}in active{% endif %}">
+	    {% for rule in content %}
+	      {{ rule(form, form_opts=form_opts) }}
+	    {% endfor %}
+	  </div>
+	  {% endfor %}
+	</div>
+    {% elif form_rules %}
         {% for r in form_rules %}
             {{ r(form, form_opts=form_opts) }}
         {% endfor %}

@@ -441,6 +441,41 @@ class BaseModelView(BaseView, ActionsMixin):
         Customized rules for the create form. Override `form_rules` if present.
     """
 
+    form_tabs = None
+    """
+    List of tabs containing list of rules.
+    This property changed default form rendering behavior and makes possible
+    to rearrange order of rendered fields in tabs, each with its own form_rules,
+    and the possibility to add some text between fields, group them, etc.
+    If not set, will use default Flask-Admin form rendering logic.
+    If set, form_rules will be ignored.
+
+     Here's simple example which illustrates how to use::
+
+            from flask.ext.admin.form import rules
+
+            class MyModelView(ModelView):
+                form_tabs = [
+                    # Define the name of the tab and the field set with header
+                      text and four fields
+                    ['Tab1', [rules.FieldSet(('first_name', 'last_name',
+                                              'email', 'phone'), 'User'),
+                              MyBlock('Hello World')]
+                    # It is possible to call macros from current context
+                    ['Tab2', [rules.Macro('my_macro', foobar='baz']])
+                ]
+    """
+    
+    form_create_tabs = None
+    """
+    Customized tabs for the create form.
+    """
+
+    form_edit_tabs = None
+    """
+    Customized tabs for the edit form.
+    """
+
     # Actions
     action_disallowed_list = ObsoleteAttr('action_disallowed_list',
                                           'disallowed_actions',
@@ -566,7 +601,8 @@ class BaseModelView(BaseView, ActionsMixin):
 
         # Form rendering rules
         if self.form_create_rules:
-            self._form_create_rules = rules.RuleSet(self, self.form_create_rules)
+            self._form_create_rules = rules.RuleSet(self,
+                                                    self.form_create_rules)
         else:
             self._form_create_rules = None
 
@@ -583,6 +619,23 @@ class BaseModelView(BaseView, ActionsMixin):
 
             if not self._form_edit_rules:
                 self._form_edit_rules = form_rules
+
+        # Form rendering tabs
+        if self.form_create_tabs:
+            self._form_create_tabs = rules.Tabs(self, self.form_create_tabs)
+        else:
+            self._form_create_tabs = None
+
+        if self.form_edit_tabs:
+            self._form_edit_tabs = rules.Tabs(self, self.form_edit_tabs)
+        else:
+            self._form_edit_tabs = None
+        if self.form_tabs:
+            form_tabs = rules.Tabs(self, self.form_tabs)
+            if not self._form_create_tabs:
+                self._form_create_tabs = form_tabs
+            if not self._form_edit_tabs:
+                self._form_edit_tabs = form_tabs
 
     # Primary key
     def get_pk_value(self, model):
@@ -1219,6 +1272,7 @@ class BaseModelView(BaseView, ActionsMixin):
                            form=form,
                            form_opts=get_form_opts(self),
                            form_rules=self._form_create_rules,
+                           form_tabs=self._form_create_tabs,
                            return_url=return_url)
 
     @expose('/edit/', methods=('GET', 'POST'))
@@ -1255,6 +1309,7 @@ class BaseModelView(BaseView, ActionsMixin):
                            form=form,
                            form_opts=get_form_opts(self),
                            form_rules=self._form_edit_rules,
+                           form_tabs=self._form_edit_tabs,
                            return_url=return_url)
 
     @expose('/delete/', methods=('POST',))

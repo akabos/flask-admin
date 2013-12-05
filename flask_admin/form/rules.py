@@ -1,3 +1,6 @@
+import random
+import string
+
 from jinja2 import Markup
 
 from flask.ext.admin._compat import string_types
@@ -353,6 +356,15 @@ class RuleSet(object):
         """
         return Field(value)
 
+    def configure_rule(self, rule, parent=None):
+        if isinstance(rule, BaseRule):
+            rule = rule.configure(self, parent)
+        elif isinstance(rule, string_types):
+            rule = self.convert_string(rule).configure(self, parent)
+        else:
+            raise ValueError('Dont know how to convert %s' % repr(rule))
+        return rule
+
     def configure_rules(self, rules, parent=None):
         """
             Configure all rules recursively - bind them to current RuleSet and
@@ -365,14 +377,11 @@ class RuleSet(object):
         """
         result = []
 
-        for r in rules:
-            if isinstance(r, BaseRule):
-                result.append(r.configure(self, parent))
-            elif isinstance(r, string_types):
-                result.append(self.convert_string(r).configure(self, parent))
-            else:
-                raise ValueError('Dont know how to convert %s' % repr(r))
-
+        if type(rules) in (list, tuple):
+            for r in rules:
+                result.append(self.configure_rule(r, parent))
+        else:
+            result.append(self.configure_rule(rules, parent))
         return result
 
     def __iter__(self):
@@ -381,3 +390,28 @@ class RuleSet(object):
         """
         for r in self.rules:
             yield r
+
+
+class Tab(object):
+    """
+    Define a Tab object: a title and a ruleset
+    """
+    def __init__(self, view, name, content):
+        self.name = name
+        self.content = RuleSet(view, content)
+
+
+class Tabs(object):
+    """
+    Define the tabs menu for the form
+    """
+    def __init__(self, view, tabs):
+        self.id = ''.join(random.choice(string.ascii_lowercase)
+                          for x in range(10))
+        tabs = [Tab(view, k, c) for (k, c) in tabs]
+        tab_id = '%s_t' % self.id + '%d'
+        self._tabs = [(tab_id % i, tab) for i, tab in enumerate(tabs)]
+
+    def __iter__(self):
+        for id, t in self._tabs:
+            yield id, t.name, t.content

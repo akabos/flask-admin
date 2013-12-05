@@ -64,6 +64,20 @@ class RuleSample(db.Model):
     notes = db.Column(db.UnicodeText)
 
 
+class TabSample(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.Unicode(64))
+    last_name = db.Column(db.Unicode(64))
+    email = db.Column(db.Unicode(128))
+    phone = db.Column(db.Unicode(32))
+
+    address = db.Column(db.Unicode(128))
+    city = db.Column(db.Unicode(128))
+    zip = db.Column(db.Unicode(8))
+
+    notes = db.Column(db.UnicodeText)
+
+
 # Delete hooks for models, delete files if models are getting deleted
 @listens_for(File, 'after_delete')
 def del_file(mapper, connection, target):
@@ -150,6 +164,14 @@ class RuleView(sqla.ModelView):
     edit_template = 'rule_edit.html'
 
 
+class TabView(sqla.ModelView):
+    form_tabs = [
+        ('Personal', ('first_name', 'last_name', 'email', 'phone')),
+        ('Address', ('address', 'city', 'zip')),
+        ('Notes', 'notes'),
+    ]
+
+
 # Flask views
 @app.route('/')
 def index():
@@ -164,6 +186,7 @@ if __name__ == '__main__':
     admin.add_view(FileView(File, db.session))
     admin.add_view(ImageView(Image, db.session))
     admin.add_view(RuleView(RuleSample, db.session, name='Rule'))
+    admin.add_view(TabView(TabSample, db.session, name='Tab'))
 
     # Create DB
     db.create_all()
