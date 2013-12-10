@@ -113,9 +113,18 @@ table.flters tr td:nth-child(2){
     margin-left: -30px;
 }
 
-.panel {
+.panel-info.fa-inline-field {
     padding-top: 25px;
     padding-left: 30px;
+}
+
+.col-md-10 .panel-default {
+    margin-bottom: 1px;
+}
+
+input[type=file] {
+    margin-top: 4px;
+    font-size: 1.1em;
 }
 
 .fa-inline-field {
@@ -158,6 +167,11 @@ td>span.glyphicon {
     width: 100px;
 }
 
+
+.form-horizontal label {
+    white-space: nowrap;
+}
+
 /* Patch Select2 */
 .select2-results li {
     min-height: 24px !important;
@@ -175,7 +189,7 @@ form .select2-choice {
 }
 
 .select2-search-choice {
-    height: 24px !important;
+    height: 25px !important;
     margin-top: 4px !important;
 }
 

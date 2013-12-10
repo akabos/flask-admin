@@ -75,7 +75,7 @@
 {%- endmacro %}
 
 {# ---------------------- Forms -------------------------- #}
-{% macro render_field(form, field, kwargs={}) %}
+{% macro render_field(form, field, offset=None, colsize=None, kwargs={}) %}
   {% set direct_error = h.is_field_error(field.errors) %}
   <div class="form-group{{ ' has-error' if direct_error else '' }}">
     {% if field.type == 'BooleanField' %}
@@ -89,9 +89,13 @@
         &nbsp;
       {% endif %}
     </label>
-    <div class="col-md-{% if field.type == 'DateTimeField' %}3{% elif field.type== 'DateField' %}2{% elif field.type == 'InlineModelFormList' %}6{% else %}4{% endif %}">
+    <div class="col-md-{% if colsize%}{{ colsize }}{% elif field.type == 'DateTimeField' %}3{% elif field.type == 'DateField' %}2{% elif field.type == 'InlineModelFormList' %}6{% else %}5{% endif %} {% if offset%} col-md-offset-{{ offset }}{% endif %}">
+      {% if field.type.endswith('UploadField') %}
+      {{ field(**kwargs)|safe }}
+      {% else %}
       {{ field(class="form-control", **kwargs)|safe }}
       {% endif %}
+    {% endif %}
       {% if direct_error %}
       <span class="help-block">
 	{% if field.description %}
@@ -112,6 +116,26 @@
 
 {% macro render_header(form, text) %}
     <h3>{{ text }}</h3>
+{% endmacro %}
+
+{% macro render_panel(form, form_opts, content, header=None, footer=None, style="default") %}
+    <div class="col-md-10">
+      <div class="panel panel-{{ style }}">
+	{% if header %}
+	<div class="panel-heading">{{ header }}</div>
+	{% endif %}
+	<div class="panel-body">{{ content }}</div>
+	{% if footer %}
+	<div class="panel-footer">{{ footer }}</div>
+	{% endif %}
+      </div>
+    </div>
+{% endmacro %}
+
+{% macro render_ruleset(rules, form, form_opts) %}
+    {% for r in rules %}
+    {{ r(form, form_opts=form_opts) }}
+    {% endfor %}
 {% endmacro %}
 
 {% macro render_form_fields(form, form_opts={}, form_rules=None) %}
@@ -137,16 +161,12 @@
 	<div id="{{ form_tabs.id }}_cnt" class="tab-content">
 	  {% for id, name, content in form_tabs %}
 	  <div id="{{ id }}" class="tab-pane form-pane fade {% if loop.first %}in active{% endif %}">
-	    {% for rule in content %}
-	      {{ rule(form, form_opts=form_opts) }}
-	    {% endfor %}
+	    {{ render_ruleset(content, form, form_opts) }}
 	  </div>
 	  {% endfor %}
 	</div>
     {% elif form_rules %}
-        {% for r in form_rules %}
-            {{ r(form, form_opts=form_opts) }}
-        {% endfor %}
+	{{ render_ruleset(form_rules, form, form_opts=form_opts) }}
     {% else %}
         {% for f in form if f.type != 'HiddenField' and f.type != 'CSRFTokenField' %}
           {% if form_opts %}

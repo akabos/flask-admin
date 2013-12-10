@@ -77,6 +77,20 @@ class TabSample(db.Model):
 
     notes = db.Column(db.UnicodeText)
 
+    
+class PanelSample(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.Unicode(64))
+    last_name = db.Column(db.Unicode(64))
+    email = db.Column(db.Unicode(128))
+    phone = db.Column(db.Unicode(32))
+
+    address = db.Column(db.Unicode(128))
+    city = db.Column(db.Unicode(128))
+    zip = db.Column(db.Unicode(8))
+
+    notes = db.Column(db.UnicodeText)
+
 
 # Delete hooks for models, delete files if models are getting deleted
 @listens_for(File, 'after_delete')
@@ -166,9 +180,17 @@ class RuleView(sqla.ModelView):
 
 class TabView(sqla.ModelView):
     form_tabs = [
-        ('Personal', ('first_name', 'last_name', 'email', 'phone')),
-        ('Address', ('address', 'city', 'zip')),
-        ('Notes', 'notes'),
+        (('first_name', 'last_name', 'email', 'phone'), 'Personal'),
+        (('address', 'city', 'zip'), 'Address'),
+        (('notes',), 'notes'),
+    ]
+
+
+class PanelView(sqla.ModelView):
+    form_rules = [
+        rules.Panel(('first_name', 'last_name', 'email', 'phone'), 'Personal'),
+        rules.Panel(('address', 'city', 'zip'), 'Address'),
+        rules.Panel(('notes',), 'Notes'),
     ]
 
 
@@ -187,6 +209,7 @@ if __name__ == '__main__':
     admin.add_view(ImageView(Image, db.session))
     admin.add_view(RuleView(RuleSample, db.session, name='Rule'))
     admin.add_view(TabView(TabSample, db.session, name='Tab'))
+    admin.add_view(PanelView(PanelSample, db.session, name='Panel'))
 
     # Create DB
     db.create_all()

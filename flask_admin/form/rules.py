@@ -89,7 +89,6 @@ class NestedRule(BaseRule):
                 Optional arguments that should be passed to template or the field
         """
         result = []
-
         for r in self.rules:
             result.append(r(form, form_opts, field_args))
 
@@ -184,10 +183,8 @@ class Macro(BaseRule):
         """
         context = helpers.get_render_ctx()
         macro = self._resolve(context, self.macro_name)
-
         if not macro:
             raise ValueError('Cannot find macro %s in current context.' % self.macro_name)
-
         opts = dict(self.default_args)
         opts.update(field_args)
         return macro(**opts)
@@ -276,7 +273,6 @@ class Field(Macro):
 
         if not field:
             raise ValueError('Form %s does not have field %s' % (form, self.field_name))
-
         opts = {}
 
         if form_opts:
@@ -330,6 +326,25 @@ class FieldSet(NestedRule):
             rule_set = list(rules)
 
         super(FieldSet, self).__init__(rule_set, separator=separator)
+
+
+class Panel(Macro):
+    """
+    Render a FieldSet in a bootstrap panel
+    """
+    def __init__(self, content, header=None, footer=None,
+                 panel_macro='lib.render_panel'):
+        self.content = FieldSet(content)
+        super(Panel, self).__init__(panel_macro, content=self.content,
+                                    header=header, footer=footer)
+
+    def configure(self, rule_set, parent):
+        self.content.configure(rule_set, self)
+        return super(Panel, self).configure(rule_set, parent)
+
+    def __call__(self, form, form_opts, field_args={}):
+        self.default_args['content'] = self.content(form, form_opts)
+        return super(Panel, self).__call__(form, form_opts, field_args)
 
 
 class RuleSet(object):
@@ -408,7 +423,7 @@ class Tabs(object):
     def __init__(self, view, tabs):
         self.id = ''.join(random.choice(string.ascii_lowercase)
                           for x in range(10))
-        tabs = [Tab(view, k, c) for (k, c) in tabs]
+        tabs = [Tab(view, k, c) for (c, k) in tabs]
         tab_id = '%s_t' % self.id + '%d'
         self._tabs = [(tab_id % i, tab) for i, tab in enumerate(tabs)]
 

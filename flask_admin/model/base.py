@@ -273,6 +273,16 @@ class BaseModelView(BaseView, ActionsMixin):
                 form = MyForm
     """
 
+    create_form_class = None
+    """
+    Form used in create view
+    """
+
+    edit_form_class = None
+    """
+    Form used in edit view
+    """
+
     form_base_class = BaseForm
     """
         Base form class. Will be used by form scaffolding function when creating model form.
@@ -795,7 +805,7 @@ class BaseModelView(BaseView, ActionsMixin):
 
             Override to implement customized behavior.
         """
-        return self.get_form()
+        return self.create_form_class or self.get_form()
 
     def get_edit_form(self):
         """
@@ -803,7 +813,7 @@ class BaseModelView(BaseView, ActionsMixin):
 
             Override to implement customized behavior.
         """
-        return self.get_form()
+        return self.edit_form_class or self.get_form()
 
     def create_form(self, obj=None):
         """
